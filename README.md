@@ -4,15 +4,17 @@
 
 ## OpenCV with Python
 
+## ML basic with scikit-learn
+
 ## ML basic with PyTorch
 
-## PyTorch native Image Classification
+## Image recognition with PyTorch
 
-## PyTorch native Object Detection
-
-## TBU
+## Generative AI
 
 ## Ultralytics
+
+## MMDetection
 
 ## CUDA C/C++
 
@@ -22,12 +24,12 @@
 
 - Nvidia DLI
 
-## CUDA C++ in Python
+## Object Detection with Jetson Nano
 
-## Ultralytics in Jetson
+## Fundamentals of Deep Learning 
 
-## TBU
+- Nvidia DLI
 
-## TensorRT in Jetson
+## Optimization with Jetson
 
-## TBU
+## Multimodal
