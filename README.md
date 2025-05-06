@@ -4,11 +4,17 @@
 
 ## OpenCV with Python
 
-## ML basic with scikit-learn
+https://github.com/JinFree/deeplearningwithjetson/tree/main/OpenCV_Python
 
-## ML basic with PyTorch
+## ML basic with Python
 
-## Image recognition with PyTorch
+https://github.com/JinFree/deeplearningwithjetson/tree/main/ML_Basic_Python
+
+## DL basic with Python
+
+https://github.com/JinFree/deeplearningwithjetson/tree/main/DL_Basic_Python
+
+## PyTorch Native CNN
 
 ## Generative AI
 
