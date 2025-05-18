@@ -16,11 +16,13 @@ https://github.com/JinFree/deeplearningwithjetson/tree/main/DL_Basic_Python
 
 ## PyTorch Native CNN
 
+https://github.com/JinFree/deeplearningwithjetson/tree/main/PyTorch_Native_CNN
+
 ## Generative AI
 
 ## Ultralytics
 
-## MMDetection
+## PyTorch Object Detections
 
 ## CUDA C/C++
 
