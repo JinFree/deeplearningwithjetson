@@ -39,9 +39,15 @@ class TrtUltralyticsYOLO:
         self._allocate_buffers()
 
     def _allocate_buffers(self):
-        """엔진의 바인딩(입출력) 정보를 읽어 GPU 메모리, 호스트 메모리 버퍼를 할당."""
-        self.bindings = []
+        """
+        엔진의 바인딩(입출력) 정보를 읽어
+        - 입력/출력 바인딩 인덱스를 분리하여 저장
+        - 호스트/디바이스 메모리 버퍼를 각각 할당
+        """
+        self.input_binding_idxs = []
+        self.output_binding_idxs = []
         self.stream = cuda.Stream()
+
         self.host_inputs = []
         self.device_inputs = []
         self.host_outputs = []
@@ -50,56 +56,72 @@ class TrtUltralyticsYOLO:
         for binding_idx in range(self.engine.num_bindings):
             binding_name = self.engine.get_binding_name(binding_idx)
             dtype = trt.nptype(self.engine.get_binding_dtype(binding_idx))
+            # binding shape (동적 배치인 경우, -1 포함)
             shape = tuple(self.engine.get_binding_shape(binding_idx))
-            # 동적 배치(Dynamic shape)일 경우엔 컨텍스트에서 현재 배치에 맞게 set_binding_shape 호출 필요
+
+            # 바인딩이 입력이면
             if self.engine.binding_is_input(binding_idx):
-                # 입력은 일반적으로 (1, 3, H, W)
+                # 입력: 일반적으로 (1, 3, INPUT_HEIGHT, INPUT_WIDTH)
                 size = trt.volume(shape) * np.dtype(dtype).itemsize
                 # 호스트/디바이스 버퍼 생성
                 host_mem = cuda.pagelocked_empty(trt.volume(shape), dtype)
                 device_mem = cuda.mem_alloc(size)
+                self.input_binding_idxs.append(binding_idx)
                 self.host_inputs.append(host_mem)
                 self.device_inputs.append(device_mem)
+
+            # 바인딩이 출력이면
             else:
-                # 출력도 비슷하게 생성
-                # -1(배치) 처리: 일반적으로 배치=1이므로 shape[0]=1로 가정. (동적 shape인 경우, inference 전에 set_binding_shape 필요)
+                # 예시: (1, num_preds, 5 + NUM_CLASSES)
+                # -1 (동적) 처리: TensorRT 엔진을 만들 때 고정해 두었다면, 여기에 -1이 없을 것
                 out_shape = tuple(shape)
                 size = trt.volume(out_shape) * np.dtype(dtype).itemsize
                 host_mem = cuda.pagelocked_empty(trt.volume(out_shape), dtype)
                 device_mem = cuda.mem_alloc(size)
+                self.output_binding_idxs.append(binding_idx)
                 self.host_outputs.append(host_mem)
                 self.device_outputs.append(device_mem)
 
-            self.bindings.append(int(device_mem))  # 디바이스 포인터(정수) 저장
+            # 최종적으로 디바이스 포인터를 바인딩 리스트에 추가해야 execute_async_v2 때 사용 가능
+            self.bindings = [int(dev) for dev in (self.device_inputs + self.device_outputs)]
 
         self.batch_size = 1
 
     def infer(self, input_image):
-        """전처리된 단일 이미지를 GPU로 복사하여 TensorRT 추론, 결과를 반환."""
-        # 1) 바인딩 셋팅 (입력 shape이 동적이라면)
-        #    예: self.context.set_binding_shape(0, (1,3,INPUT_HEIGHT,INPUT_WIDTH))
+        """
+        전처리된 단일 이미지를 GPU로 복사하여 TensorRT 추론을 수행하고,
+        결과를 NumPy 배열 리스트로 반환합니다.
+        """
+        # (1) 입력 바인딩이 동적(shape에 -1이 있을 경우)이라면
+        #     ex) if self.engine.is_shape_binding(binding_idx): 
+        #         self.context.set_binding_shape(binding_idx, (1,3,INPUT_HEIGHT,INPUT_WIDTH))
 
-        # 2) 호스트 입력 버퍼에 copy (평탄화)
+        # (2) 호스트 입력 버퍼에 전처리된 이미지(flatten) 복사
         np.copyto(self.host_inputs[0], input_image.ravel())
 
-        # 3) 호스트 → 디바이스 복사
+        # (3) 호스트 → 디바이스 메모리 복사
         cuda.memcpy_htod_async(self.device_inputs[0], self.host_inputs[0], self.stream)
 
-        # 4) inference 실행
+        # (4) TensorRT 추론 실행
         self.context.execute_async_v2(bindings=self.bindings, stream_handle=self.stream.handle)
 
-        # 5) 디바이스 → 호스트 복사
-        for i, _ in enumerate(self.host_outputs):
-            cuda.memcpy_dtoh_async(self.host_outputs[i], self.device_outputs[i], self.stream)
+        # (5) 디바이스 → 호스트 메모리 복사
+        for i, output_dev in enumerate(self.device_outputs):
+            cuda.memcpy_dtoh_async(self.host_outputs[i], output_dev, self.stream)
 
-        # 6) 스트림 동기화
+        # (6) 스트림 동기화
         self.stream.synchronize()
 
-        # 7) 출력 버퍼를 NumPy 배열로 변환하여 반환 (list of 배열)
+        # (7) 출력 버퍼들을 NumPy 배열로 reshape
         output_arrays = []
-        for host_mem in self.host_outputs:
-            output_arrays.append(np.array(host_mem).reshape(self.engine.get_binding_shape(self.host_outputs.index(host_mem))))
-
+        for i, host_mem in enumerate(self.host_outputs):
+            binding_idx = self.output_binding_idxs[i]
+            # 컨텍스트에 동적 shape인 경우가 있다면, 실제 바인딩 크기를 get
+            out_shape = self.context.get_binding_shape(binding_idx)
+            # 예: out_shape = (1, num_preds, 5+NUM_CLASSES)
+            output_arrays.append(
+                np.array(host_mem).reshape(out_shape)
+            )
         return output_arrays
 
 
