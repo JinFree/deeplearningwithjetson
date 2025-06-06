@@ -74,9 +74,8 @@ class TrtUltralyticsYOLO:
             else:
                 # 예시: (1, num_preds, 5 + NUM_CLASSES)
                 # -1 (동적) 처리: TensorRT 엔진을 만들 때 고정해 두었다면, 여기에 -1이 없을 것
-                out_shape = tuple(shape)
-                size = trt.volume(out_shape) * np.dtype(dtype).itemsize
-                host_mem = cuda.pagelocked_empty(trt.volume(out_shape), dtype)
+                size = trt.volume(shape) * np.dtype(dtype).itemsize
+                host_mem = cuda.pagelocked_empty(trt.volume(shape), dtype)
                 device_mem = cuda.mem_alloc(size)
                 self.output_binding_idxs.append(binding_idx)
                 self.host_outputs.append(host_mem)
