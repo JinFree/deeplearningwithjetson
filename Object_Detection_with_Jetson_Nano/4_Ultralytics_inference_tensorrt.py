@@ -216,6 +216,9 @@ def main(model_path, image_path, input_width, input_height, object_threshold, io
     
     # 3) ONNX 모델 로드 및 추론
     yolo = TRTUltralyticsYOLO(model_path)
+    outputs = yolo.infer(input_tensor)
+    outputs = yolo.infer(input_tensor)
+    outputs = yolo.infer(input_tensor)
     start = time.perf_counter() 
     outputs = yolo.infer(input_tensor)
     end = time.perf_counter() 
