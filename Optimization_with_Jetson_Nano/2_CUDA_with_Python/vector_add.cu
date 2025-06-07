@@ -1,12 +1,16 @@
 #include <cuda_runtime.h>
 #include <stddef.h>
+#include <cstring>
+
 
 __global__ void vector_add_kernel(float* a, float* b, float* result, int n) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < n) {
+    int thread = blockIdx.x * blockDim.x + threadIdx.x;
+    int stride = blockDim.x * gridDim.x;
+    for (int idx = thread ; idx < n ; idx += stride) {
         result[idx] = a[idx] + b[idx];
     }
 }
+
 
 extern "C" void vector_add(float* a, float* b, float* result, int n) {
     float *d_a, *d_b, *d_result;
@@ -23,7 +27,7 @@ extern "C" void vector_add(float* a, float* b, float* result, int n) {
 
     // Launch kernel with enough blocks and threads
     int blockSize = 256;
-    int numBlocks = (n + blockSize - 1) / blockSize;
+    int numBlocks = 4;
     vector_add_kernel<<<numBlocks, blockSize>>>(d_a, d_b, d_result, n);
     cudaDeviceSynchronize();
 
