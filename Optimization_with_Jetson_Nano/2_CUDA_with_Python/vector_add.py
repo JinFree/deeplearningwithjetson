@@ -1,3 +1,4 @@
+import timeit
 import numpy as np
 import ctypes
 
@@ -9,7 +10,7 @@ c_lib = ctypes.CDLL('./build/vector_add.so')
 # void vector_add(double* a, double* b, double* result, int n)
 c_lib.vector_add.argtypes = [ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.c_int]
 
-n = 1024
+n = 4096 * 1024
 a = np.random.randn(n).astype(np.float32)
 b = np.random.randn(n).astype(np.float32)
 c = np.zeros_like(a)
@@ -20,5 +21,9 @@ c_lib.vector_add(a.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
                  c.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
                  len(a))
 
-# 결과 출력
-print(np.max(c -(a+b)))
+timer = timeit.Timer(c_lib.vector_add(a.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+                                    b.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+                                    c.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+                                    len(a)).copy)
+duration = timer.timeit(number=10)
+print(f"10회 반복 평균: {duration/10*1000:.6f}ms")
