@@ -141,19 +141,6 @@ def preprocess_image(cv_img, input_w, input_h):
     return np.expand_dims(img_transposed, axis=0)
 
 
-def xywh2xyxy(box):
-    """
-    YOLO format (center_x, center_y, w, h) → (x1, y1, x2, y2)
-    box: [cx, cy, w, h] (절대 픽셀 좌표 기준)
-    """
-    x_c, y_c, w, h = box
-    x1 = x_c - w / 2
-    y1 = y_c - h / 2
-    x2 = x_c + w / 2
-    y2 = y_c + h / 2
-    return [x1, y1, x2, y2]
-
-
 def NMSBoxes(boxes, scores, score_threshold, nms_threshold, eta=1.0, top_k=0):
     """
     OpenCV cv2.dnn.NMSBoxes와 동일한 인터페이스의 순수 Python 구현.
