@@ -13,7 +13,8 @@ sudo apt autoremove
 - 몇가지 패키지를 설치합니다.
 ```
 sudo apt update
-sudo apt install -y apt-utils nvidia-jetpack wget curl git vim tmux python3-pip
+sudo apt install -y nvidia-jetpack 
+sudo apt install -y apt-utils wget curl git vim tmux python3-pip
 sudo -H python3 -m pip install -U jetson-stats
 ```
 
