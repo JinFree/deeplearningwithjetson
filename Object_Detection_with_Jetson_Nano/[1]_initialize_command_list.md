@@ -20,7 +20,7 @@ sudo -H python3 -m pip install -U jetson-stats
 - CUDA 경로를 ~/.bashrc에 등록합니다.
 ```
 echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/cuda/lib64" >> ~/.bashrc
-echo "export PATH=\$PATH:/usr/local/cuda/bin" >> ~/.bashrc
+echo "export PATH=\$PATH:/usr/local/cuda/bin:/usr/src/tensorrt/bin" >> ~/.bashrc
 echo "set -g mouse on" >> ~/.tmux.conf
 ```
 
