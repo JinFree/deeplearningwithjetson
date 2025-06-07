@@ -2,7 +2,6 @@
 #include <stddef.h>
 #include <cstring>
 
-
 __global__ void vector_add_kernel(float* a, float* b, float* result, int n) {
     int thread = blockIdx.x * blockDim.x + threadIdx.x;
     int stride = blockDim.x * gridDim.x;
@@ -10,7 +9,6 @@ __global__ void vector_add_kernel(float* a, float* b, float* result, int n) {
         result[idx] = a[idx] + b[idx];
     }
 }
-
 
 extern "C" void vector_add(float* a, float* b, float* result, int n) {
     float *d_a, *d_b, *d_result;
