@@ -1,8 +1,6 @@
 import cv2
+import onnxruntime as ort
 import numpy as np
-import tensorrt as trt
-import pycuda.driver as cuda
-import pycuda.autoinit
 
 # =============================
 # 1) 설정부
