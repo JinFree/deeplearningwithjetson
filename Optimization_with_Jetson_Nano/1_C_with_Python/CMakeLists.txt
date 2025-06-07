@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
-project(vector_add C)
+project(vector_add LANGUAGES C CXX)
 
 # -fPIC: Position Independent Code, 공유 라이브러리에 필요
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -fPIC -O3")
 
 # vector_add.c 로부터 shared library 생성
 add_library(vector_add SHARED vector_add.c)
