@@ -29,7 +29,6 @@ extern "C" void vector_add(float* a, float* b, float* result, int n) {
     int blockSize = 256;
     int numBlocks = 4;
     vector_add_kernel<<<numBlocks, blockSize>>>(d_a, d_b, d_result, n);
-    cudaDeviceSynchronize();
 
     // Copy result back to host
     cudaMemcpy(result, d_result, size, cudaMemcpyDeviceToHost);
