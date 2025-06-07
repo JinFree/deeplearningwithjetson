@@ -57,6 +57,11 @@ model_yolo11n.export(format='engine', half=True)
 os.system("mv yolo11n.engine yolo11n_fp16.engine")
 ```
 
+TensorRT 추론을 위해 numpy 특정 버전을 설치합니다.
+```
+python3 -m pip install numpy==1.23.5
+```
+
 TensorRT 변환한 YOLO11n 모델을 추론하여 속도를 확인합니다.
 ```
 # python3
@@ -124,4 +129,11 @@ os.system("mv yolov8n.engine yolov8n_fp16_416.engine")
 
 model_yolov8n = YOLO('yolov8n_fp16_416.engine')
 model_yolov8n(video_path, save=True)
+```
+
+다음 실습을 위해 onnx 파일과 engine 파일을 workspace 경로로 복사해줍니다.
+```
+mkdir /workspace/files_from_ultralytics
+cp /ultralytics/*onnx /workspace/files_from_ultralytics/.
+cp /ultralytics/*engine /workspace/files_from_ultralytics/.
 ```

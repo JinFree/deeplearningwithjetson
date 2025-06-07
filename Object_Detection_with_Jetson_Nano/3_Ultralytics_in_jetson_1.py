@@ -72,3 +72,8 @@ if __name__ == "__main__":
         convert_to_engine('yolov8n.pt', 416, half=True)
         inference_video_with_ultralytics('yolov8n_fp16_416.engine', VIDEO_PATH, save=True)
     
+    if 0:
+        # 다음 실습을 위해 onnx 파일과 engine 파일을 workspace 경로로 복사해줍니다.
+        os.system('mkdir /workspace/files_from_ultralytics')
+        os.system('cp /ultralytics/*onnx /workspace/files_from_ultralytics/.')
+        os.system('cp /ultralytics/*engine /workspace/files_from_ultralytics/.')
