@@ -21,9 +21,9 @@ c_lib.vector_add(a.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
                  c.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
                  len(a))
 
-timer = timeit.Timer(c_lib.vector_add(a.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
-                                    b.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
-                                    c.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
-                                    len(a)).copy)
+timer = timeit.Timer(lambda: c_lib.vector_add(a.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+                                                b.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+                                                c.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+                                                len(a)))
 duration = timer.timeit(number=10)
 print(f"10회 반복 평균: {duration/10*1000:.6f}ms")

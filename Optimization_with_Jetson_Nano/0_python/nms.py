@@ -78,12 +78,12 @@ def generate_boxes_and_scores(num_boxes):
 boxes, scores = generate_boxes_and_scores(4096)
 
 # NMS 실행
-timer = timeit.Timer(nms_boxes(
-    boxes, scores,
-    score_threshold=0.5,
-    nms_threshold=0.4,
-    eta=1.0,
-    top_k=0
-).copy)
+timer = timeit.Timer(lambda: nms_boxes(
+                                        boxes, scores,
+                                        score_threshold=0.5,
+                                        nms_threshold=0.4,
+                                        eta=1.0,
+                                        top_k=0
+                                    ))
 duration = timer.timeit(number=10)
 print(f"10회 반복 평균: {duration/10*1000:.6f}ms")
