@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import time
 import tensorrt as trt
 import pycuda.driver as cuda
 import pycuda.autoinit
@@ -208,14 +209,23 @@ def main(model_path, image_path, input_width, input_height, object_threshold, io
     orig_h, orig_w = orig_img.shape[:2]
 
     # 2) 전처리
+    start = time.perf_counter() 
     input_tensor = preprocess_image(orig_img, input_width, input_height)
+    end = time.perf_counter() 
+    print(f"Preprocessing time: {end - start:.4f} seconds")
     
     # 3) ONNX 모델 로드 및 추론
     yolo = TRTUltralyticsYOLO(model_path)
+    start = time.perf_counter() 
     outputs = yolo.infer(input_tensor)
+    end = time.perf_counter() 
+    print(f"Inference time: {end - start:.4f} seconds")
     
     # 4) 후처리 (박스 리스트 반환)
+    start = time.perf_counter() 
     detections = postprocess(outputs, object_threshold, iou_threshold)
+    end = time.perf_counter() 
+    print(f"Postprocessing time: {end - start:.4f} seconds")
     
     if detections.size == 0:
         print("No objects detected.")
