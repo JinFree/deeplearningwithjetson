@@ -1,11 +1,12 @@
-from ultralytics import YOLO
 import os
+
 IMAGE_ROOT = "/workspace/images"
 VIDEO_PATH = "/workspace/challenge.mp4"
 IMAGE_PATH_LIST = [os.path.join(IMAGE_ROOT, "bus.jpg"), os.path.join(IMAGE_ROOT, "zidane.jpg")]
 
 
 def inference_image_with_ultralytics(model_path, image_path_list, save=False):
+    from ultralytics import YOLO
     model = YOLO(model_path)
     for image_path in image_path_list:
         model(image_path, save=save)
@@ -13,12 +14,14 @@ def inference_image_with_ultralytics(model_path, image_path_list, save=False):
 
 
 def inference_video_with_ultralytics(model_path, video_path, save=False):
+    from ultralytics import YOLO
     model = YOLO(model_path)
     model(video_path, save=save)
     return
 
 
 def convert_to_onnx(model_name, input_size=640):
+    from ultralytics import YOLO
     model = YOLO(model_name)
     model.export(format='onnx', imgsz=input_size)
     os.system(f'mv {model_name.replace(".pt", ".onnx")} {model_name.replace(".pt", "")}_{input_size}.onnx')
@@ -26,6 +29,7 @@ def convert_to_onnx(model_name, input_size=640):
 
 
 def convert_to_engine(model_name, input_size=640, half=False):
+    from ultralytics import YOLO
     model = YOLO(model_name)
     model.export(format='engine', imgsz=input_size, half=half)
     os.system(f'mv {model_name.replace(".pt", ".engine")} {model_name.replace(".pt", "")}_fp{"16" if half else "32"}_{input_size}.engine')
