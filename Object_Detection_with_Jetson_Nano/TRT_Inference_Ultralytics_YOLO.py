@@ -22,21 +22,105 @@ def get_class_names():
 
 
 # =============================
-# 2) ONNX 추론 클래스
+# 2) TensorRT 추론 클래스
 # =============================
-class OnnxUltralyticsYOLO:
-    def __init__(self, onnx_path, providers=['CPUExecutionProvider', 'CUDAExecutionProvider']):
-        self.session = ort.InferenceSession(onnx_path, providers=providers)
-        self.input_name = self.session.get_inputs()[0].name
-        
-    def infer(self, input_tensor):
+class TRTUltralyticsYOLO:
+    def __init__(self, engine_path):    
+        # TensorRT logger 생성
+        self.logger = trt.Logger(trt.Logger.WARNING)
+        # 엔진 로드
+        with open(engine_path, "rb") as f, trt.Runtime(self.logger) as runtime:
+            engine_data = f.read()
+            self.engine = runtime.deserialize_cuda_engine(engine_data)
+        # 컨텍스트 생성
+        self.context = self.engine.create_execution_context()
+        # I/O 바인딩 인덱스 및 크기 추출
+        self._allocate_buffers()
+
+    def _allocate_buffers(self):
         """
-        ONNX 모델에 입력 텐서를 넣고 추론 결과를 반환합니다.
-        :param input_tensor: 전처리된 입력 텐서 (N, C, H, W)
-        :return: 추론 결과
+        엔진의 바인딩(입출력) 정보를 읽어
+        - 입력/출력 바인딩 인덱스를 분리하여 저장
+        - 호스트/디바이스 메모리 버퍼를 각각 할당
         """
-        outputs = self.session.run(None, {self.input_name: input_tensor})
-        return outputs
+        self.input_binding_idxs = []
+        self.output_binding_idxs = []
+        self.stream = cuda.Stream()
+
+        self.host_inputs = []
+        self.device_inputs = []
+        self.host_outputs = []
+        self.device_outputs = []
+
+        for binding_idx in range(self.engine.num_bindings):
+            binding_name = self.engine.get_binding_name(binding_idx)
+            dtype = trt.nptype(self.engine.get_binding_dtype(binding_idx))
+            # binding shape (동적 배치인 경우, -1 포함)
+            shape = tuple(self.engine.get_binding_shape(binding_idx))
+
+            # 바인딩이 입력이면
+            if self.engine.binding_is_input(binding_idx):
+                # 입력: 일반적으로 (1, 3, INPUT_HEIGHT, INPUT_WIDTH)
+                size = trt.volume(shape) * np.dtype(dtype).itemsize
+                # 호스트/디바이스 버퍼 생성
+                host_mem = cuda.pagelocked_empty(trt.volume(shape), dtype)
+                device_mem = cuda.mem_alloc(size)
+                self.input_binding_idxs.append(binding_idx)
+                self.host_inputs.append(host_mem)
+                self.device_inputs.append(device_mem)
+
+            # 바인딩이 출력이면
+            else:
+                # 예시: (1, num_preds, 5 + NUM_CLASSES)
+                # -1 (동적) 처리: TensorRT 엔진을 만들 때 고정해 두었다면, 여기에 -1이 없을 것
+                size = trt.volume(shape) * np.dtype(dtype).itemsize
+                host_mem = cuda.pagelocked_empty(trt.volume(shape), dtype)
+                device_mem = cuda.mem_alloc(size)
+                self.output_binding_idxs.append(binding_idx)
+                self.host_outputs.append(host_mem)
+                self.device_outputs.append(device_mem)
+
+            # 최종적으로 디바이스 포인터를 바인딩 리스트에 추가해야 execute_async_v2 때 사용 가능
+            self.bindings = [int(dev) for dev in (self.device_inputs + self.device_outputs)]
+
+        self.batch_size = 1
+
+    def infer(self, input_image):
+        """
+        전처리된 단일 이미지를 GPU로 복사하여 TensorRT 추론을 수행하고,
+        결과를 NumPy 배열 리스트로 반환합니다.
+        """
+        # (1) 입력 바인딩이 동적(shape에 -1이 있을 경우)이라면
+        #     ex) if self.engine.is_shape_binding(binding_idx): 
+        #         self.context.set_binding_shape(binding_idx, (1,3,INPUT_HEIGHT,INPUT_WIDTH))
+
+        # (2) 호스트 입력 버퍼에 전처리된 이미지(flatten) 복사
+        np.copyto(self.host_inputs[0], input_image.ravel())
+
+        # (3) 호스트 → 디바이스 메모리 복사
+        cuda.memcpy_htod_async(self.device_inputs[0], self.host_inputs[0], self.stream)
+
+        # (4) TensorRT 추론 실행
+        self.context.execute_async_v2(bindings=self.bindings, stream_handle=self.stream.handle)
+
+        # (5) 디바이스 → 호스트 메모리 복사
+        for i, output_dev in enumerate(self.device_outputs):
+            cuda.memcpy_dtoh_async(self.host_outputs[i], output_dev, self.stream)
+
+        # (6) 스트림 동기화
+        self.stream.synchronize()
+
+        # (7) 출력 버퍼들을 NumPy 배열로 reshape
+        output_arrays = []
+        for i, host_mem in enumerate(self.host_outputs):
+            binding_idx = self.output_binding_idxs[i]
+            # 컨텍스트에 동적 shape인 경우가 있다면, 실제 바인딩 크기를 get
+            out_shape = self.context.get_binding_shape(binding_idx)
+            # 예: out_shape = (1, num_preds, 5+NUM_CLASSES)
+            output_arrays.append(
+                np.array(host_mem).reshape(out_shape)
+            )
+        return output_arrays
 
 
 # =============================
@@ -70,7 +154,7 @@ def xywh2xyxy(box):
 
 
 def postprocess(outputs, conf_thresh, nms_thresh):
-    results = outputs.transpose()  # (N, C) -> (C, N)
+    results = outputs[0].transpose()  # (N, C) -> (C, N)
     if len(results[0]) != 5:
         class_filtered_results = []
         for detection in results:
@@ -127,31 +211,29 @@ def main(model_path, image_path, input_width, input_height, object_threshold, io
     input_tensor = preprocess_image(orig_img, input_width, input_height)
     
     # 3) ONNX 모델 로드 및 추론
-    yolo = OnnxUltralyticsYOLO(model_path)
+    yolo = TRTUltralyticsYOLO(model_path)
     outputs = yolo.infer(input_tensor)
     
     # 4) 후처리 (박스 리스트 반환)
-    detections = postprocess(outputs, orig_w, orig_h, input_width, input_height, object_threshold, iou_threshold)
+    detections = postprocess(outputs, object_threshold, iou_threshold)
     
-    class_names = get_class_names()
-    session, input_name = get_session(model_path)
-    orig_image, orig_h, orig_w, input_tensor = preprocessing(image_path, input_width, input_height)
-    outputs = inference_image(session, input_name, input_tensor)
-    results = get_detection_output(outputs, object_threshold, iou_threshold)
-    if results.size == 0:
+    if detections.size == 0:
         print("No objects detected.")
         return
-    result_image = visualize(class_names, results, orig_image, orig_h, orig_w)
+    class_names = get_class_names()
+    result_image = visualize(class_names, detections, orig_img, orig_h, orig_w)
     cv2.imwrite('result.jpg', result_image)
+    
+        
 if __name__ == "__main__":
     import argparse
     
-    parser = argparse.ArgumentParser(description="YOLOv11 ONNX + OpenCV Inference Script")
-    parser.add_argument("--onnx", type=str, default="yolo11n_fp16.engine", help="ONNX 파일 경로")
+    parser = argparse.ArgumentParser(description="Ultralytics YOLO TensorRT + OpenCV Inference Script")
+    parser.add_argument("--model", type=str, required=True, help="engine 파일 경로")
     parser.add_argument("--image",  type=str, required=True, help="추론할 이미지 파일 경로")
     parser.add_argument("--input_width",  type=int, default=416, help="모델 입력 가로 크기")
     parser.add_argument("--conf_thresh",  type=float, default=0.25, help="객체 신뢰도 임계값")
     parser.add_argument("--nms_thresh",   type=float, default=0.45, help="NMS IoU 임계값")
     args = parser.parse_args()
 
-    main(args.onnx, args.image, args.input_width, args.input_width, args.conf_thresh, args.nms_thresh)
+    main(args.model, args.image, args.input_width, args.input_width, args.conf_thresh, args.nms_thresh)
