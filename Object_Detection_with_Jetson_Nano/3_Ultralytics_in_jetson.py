@@ -1,72 +1,67 @@
 from ultralytics import YOLO
 import os
-img_root = "/workspace/images"
-video_path = "/workspace/challenge.mp4"
+IMAGE_ROOT = "/workspace/images"
+VIDEO_PATH = "/workspace/challenge.mp4"
+IMAGE_PATH_LIST = [os.path.join(IMAGE_ROOT, "bus.jpg"), os.path.join(IMAGE_ROOT, "zidane.jpg")]
 
-# Ultralytics docker 환경에서 YOLO11n 모델과 YOLO12n 모델을 onnx로 변환합니다.
-model_yolo11n = YOLO('yolo11n.pt')
-model_yolo11n.export(format='onnx')
 
-model_yolo12n = YOLO('yolo12n.pt')
-model_yolo12n.export(format='onnx')
+def inference_image_with_ultralytics(model_path, image_path_list, save=False):
+  model = YOLO(model_path)
+  for image_path in image_path_list:
+    model(image_path, save=save)
+  return
 
-# YOLO11n onnx로 이미지 추론 시간을 확인합니다.
-model_yolo11n = YOLO('yolo11n.onnx')
-model_yolo11n(os.path.join(img_root, "bus.jpg"), save=True)
-model_yolo11n(os.path.join(img_root, "zidane.jpg"), save=True)
 
-# YOLO12n onnx로 이미지 추론 시간을 확인합니다.
-model_yolo12n = YOLO('yolo12n.onnx')
-model_yolo12n(os.path.join(img_root, "bus.jpg"), save=True)
-model_yolo12n(os.path.join(img_root, "zidane.jpg"), save=True)
+def inference_video_with_ultralytics(model_path, video_path, save=False):
+  model = YOLO(model_path)
+  model(video_path, save=save)
+  return
 
-# YOLO11n 모델을 TensorRT로로 변환합니다. 이 때, fp32와 fp16 두 종류로 합니다.
-model_yolo11n = YOLO('yolo11n.pt')
-model_yolo11n.export(format='engine')
-os.system("mv yolo11n.engine yolo11n_fp32.engine")
 
-model_yolo11n.export(format='engine', half=True)
-os.system("mv yolo11n.engine yolo11n_fp16.engine")
+def convert_to_onnx(model_name, input_size=640):
+    # Ultralytics docker 환경에서 YOLO 모델을 onnx로 변환합니다.
+    model = YOLO(model_name)
+    model.export(format='onnx', imgsz=input_size)
+    os.system(f'mv {model_name.replace(".pt", ".onnx")} {model_name.replace(".pt", "")}_{input_size}.onnx')
+    return 
 
-# TensorRT 변환한 YOLO11n 모델을 추론하여 속도를 확인합니다.
-model_yolo11n = YOLO('yolo11n_fp32.engine')
-model_yolo11n(video_path, save=False)
 
-model_yolo11n = YOLO('yolo11n_fp16.engine')
-model_yolo11n(video_path, save=False)
+def convert_to_engine(model_name, input_size=640, half=False):
+    # Ultralytics docker 환경에서 YOLO 모델을 TensorRT로 변환합니다.
+    model = YOLO(model_name)
+    model.export(format='engine', imgsz=input_size, half=half)
+    os.system(f'mv {model_name.replace(".pt", ".engine")} {model_name.replace(".pt", "")}_fp{"16" if half else "32"}_{input_size}.engine')
+    return
 
-# YOLO11n 모델을 다른 해상도로 TensorRT변환하여 속도를 확인합니다.
-model_yolo11n = YOLO('yolo11n.pt')
-model_yolo11n.export(format='onnx', imgsz=416)
-os.system("mv yolo11n.onnx yolo11n_416.onnx")
 
-model_yolo11n.export(format='engine', half=True, imgsz=416)
-os.system("mv yolo11n.engine yolo11n_fp16_416.engine")
+if __name__ == "__main__":
+  # Ultralytics docker 환경에서 YOLO11n 모델과 YOLO12n 모델을 onnx로 변환합니다.
+  convert_to_onnx('yolo11n.pt', 640)
+  convert_to_onnx('yolo12n.pt', 640)
+  
+  # YOLO11n onnx로 이미지 추론 시간을 확인합니다.
+  inference_image_with_ultralytics('yolo11n_640.onnx', IMAGE_PATH_LIST, save=True)
+  
+  # YOLO12n onnx로 이미지 추론 시간을 확인합니다.
+  inference_image_with_ultralytics('yolo12n_640.onnx', IMAGE_PATH_LIST, save=True)
+  
+  # YOLO11n 모델을 TensorRT로로 변환합니다. 이 때, fp32와 fp16 두 종류로 합니다.
+  convert_to_engine('yolo11n.pt', 640, half=False)
+  convert_to_engine('yolo11n.pt', 640, half=True)
+  
+  # TensorRT 변환한 YOLO11n 모델을 추론하여 속도를 확인합니다.
+  inference_video_with_ultralytics('yolo11n_fp32_640.engine', VIDEO_PATH, save=True)
+  inference_video_with_ultralytics('yolo11n_fp16_640.engine', VIDEO_PATH, save=True)
 
-model_yolo11n = YOLO('yolo11n_fp16_416.engine')
-model_yolo11n(video_path, save=True)
-
-# YOLO12n 모델을 같은 방식으로 변환하여 속도를 확인합니다.
-model_yolo12n = YOLO('yolo12n.pt')
-
-model_yolo12n.export(format='onnx', imgsz=416)
-os.system("mv yolo12n.onnx yolo12n_416.onnx")
-
-model_yolo12n.export(format='engine', half=True, imgsz=416)
-os.system("mv yolo12n.engine yolo12n_fp16_416.engine")
-
-model_yolo12n = YOLO('yolo12n_fp16_416.engine')
-model_yolo12n(video_path, save=True)
-
-# YOLOv8n 모델을 같은 방식으로 변환하여 속도를 확인합니다.
-
-model_yolov8n = YOLO('yolov8n.pt')
-
-model_yolov8n.export(format='onnx', imgsz=416)
-os.system("mv yolov8n.onnx yolov8n_416.onnx")
-
-model_yolov8n.export(format='engine', half=True, imgsz=416)
-os.system("mv yolov8n.engine yolov8n_fp16_416.engine")
-
-model_yolov8n = YOLO('yolov8n_fp16_416.engine')
-model_yolov8n(video_path, save=True)
+  # YOLO11n 모델을 다른 해상도로 TensorRT변환하여 속도를 확인합니다.
+  convert_to_engine('yolo11n.pt', 416, half=True)
+  inference_video_with_ultralytics('yolo11n_fp16_416.engine', VIDEO_PATH, save=True)
+  
+  # YOLO12n 모델을 같은 방식으로 변환하여 속도를 확인합니다.
+  convert_to_engine('yolo12n.pt', 416, half=True)
+  inference_video_with_ultralytics('yolo12n_fp16_416.engine', VIDEO_PATH, save=True)
+  
+  # YOLOv8n 모델을 같은 방식으로 변환하여 속도를 확인합니다.
+  convert_to_engine('yolov8n.pt', 416, half=True)
+  inference_video_with_ultralytics('yolov8n_fp16_416.engine', VIDEO_PATH, save=True)
+  
