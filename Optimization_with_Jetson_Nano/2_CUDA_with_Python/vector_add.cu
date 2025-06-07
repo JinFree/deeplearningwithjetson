@@ -8,7 +8,7 @@ __global__ void vector_add_kernel(float* a, float* b, float* result, int n) {
     }
 }
 
-void vector_add(float* a, float* b, float* result, int n) {
+extern "C" void vector_add(float* a, float* b, float* result, int n) {
     float *d_a, *d_b, *d_result;
     size_t size = n * sizeof(float);
 
@@ -26,7 +26,7 @@ void vector_add(float* a, float* b, float* result, int n) {
     int numBlocks = (n + blockSize - 1) / blockSize;
     vector_add_kernel<<<numBlocks, blockSize>>>(d_a, d_b, d_result, n);
     cudaDeviceSynchronize();
-    
+
     // Copy result back to host
     cudaMemcpy(result, d_result, size, cudaMemcpyDeviceToHost);
 

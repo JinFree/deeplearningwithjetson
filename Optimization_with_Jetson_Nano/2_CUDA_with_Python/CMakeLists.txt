@@ -3,10 +3,8 @@ project(vector_add LANGUAGES C CXX CUDA)
 
 # -fPIC: Position Independent Code, 공유 라이브러리에 필요
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -O3")
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} 
-    -O3 
-    -gencode arch=compute_53,code=sm_53  # Jetson Nano (sm_53)용
-")
+set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -fPIC -O3")
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -O3 -gencode arch=compute_53,code=sm_53")
 
 # vector_add.cu 로부터 shared library 생성 (.so)
 add_library(vector_add SHARED vector_add.cu)
