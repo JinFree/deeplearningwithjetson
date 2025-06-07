@@ -29,6 +29,7 @@ def convert_to_onnx(model_name, input_size=640):
 def convert_to_engine(model_name, input_size=640, half=False):
     model = YOLO(model_name)
     model.export(format='engine', imgsz=input_size, half=half)
+    os.system(f'mv {model_name.replace(".pt", ".onnx")} {model_name.replace(".pt", "")}_{input_size}.onnx')
     os.system(f'mv {model_name.replace(".pt", ".engine")} {model_name.replace(".pt", "")}_fp{"16" if half else "32"}_{input_size}.engine')
     return
 

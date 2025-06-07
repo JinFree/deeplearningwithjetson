@@ -84,10 +84,8 @@ import os
 video_path = "/workspace/challenge.mp4"
 model_yolo11n = YOLO('yolo11n.pt')
 
-model_yolo11n.export(format='onnx', imgsz=416)
-os.system("mv yolo11n.onnx yolo11n_416.onnx")
-
 model_yolo11n.export(format='engine', half=True, imgsz=416)
+os.system("mv yolo11n.onnx yolo11n_416.onnx")
 os.system("mv yolo11n.engine yolo11n_fp16_416.engine")
 
 model_yolo11n = YOLO('yolo11n_fp16_416.engine')
@@ -102,10 +100,8 @@ import os
 video_path = "/workspace/challenge.mp4"
 model_yolo12n = YOLO('yolo12n.pt')
 
-model_yolo12n.export(format='onnx', imgsz=416)
-os.system("mv yolo12n.onnx yolo12n_416.onnx")
-
 model_yolo12n.export(format='engine', half=True, imgsz=416)
+os.system("mv yolo12n.onnx yolo12n_416.onnx")
 os.system("mv yolo12n.engine yolo12n_fp16_416.engine")
 
 model_yolo12n = YOLO('yolo12n_fp16_416.engine')
@@ -121,10 +117,8 @@ import os
 video_path = "/workspace/challenge.mp4"
 model_yolov8n = YOLO('yolov8n.pt')
 
-model_yolov8n.export(format='onnx', imgsz=416)
-os.system("mv yolov8n.onnx yolov8n_416.onnx")
-
 model_yolov8n.export(format='engine', half=True, imgsz=416)
+os.system("mv yolov8n.onnx yolov8n_416.onnx")
 os.system("mv yolov8n.engine yolov8n_fp16_416.engine")
 
 model_yolov8n = YOLO('yolov8n_fp16_416.engine')

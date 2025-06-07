@@ -129,7 +129,7 @@ def main(model_path, image_path, input_width, input_height, object_threshold, io
     print(f"Preprocessing time: {end - start:.4f} seconds")
     
     # 3) ONNX 모델 로드 및 추론
-    yolo = OnnxUltralyticsYOLO(model_path)
+    yolo = OnnxUltralyticsYOLO(model_path, ['CUDAExecutionProvider'])
     start = time.perf_counter() 
     outputs = yolo.infer(input_tensor)
     end = time.perf_counter() 
