@@ -19,14 +19,14 @@ c_lib = ctypes.CDLL('./build/vector_add.so')
 # void vector_add(double* a, double* b, double* result, int n)
 c_lib.vector_add.argtypes = [ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.c_int]
 
-n = 4096 * 1024
+n = 4096 * 4096
 a = np.random.randn(n).astype(np.float32)
 b = np.random.randn(n).astype(np.float32)
 c = np.zeros_like(a)
 
 timer = timeit.Timer(lambda: vector_add_python(a, b, c, n))
-duration = timer.timeit(number=10)
-print(f"vector_add_python 10회 반복 평균: {duration/10*1000:.6f}ms")
+duration = timer.timeit(number=2)
+print(f"vector_add_python 2회 반복 평균: {duration/2*1000:.6f}ms")
 
 timer = timeit.Timer(lambda: vector_add_numpy(a, b, c, n))
 duration = timer.timeit(number=10)

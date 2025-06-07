@@ -1,13 +1,28 @@
 CUDA C로 작성한 함수를 Python에서 사용하는 것을 실습합니다.
 
-실습을 위한 cuda 함수는 vector 합 함수입니다.
+실습 과정에서 vector 합 함수를 구현하고 각각의 환경에서 속도를 비교해보겠습니다.
+
+우선 Python 구현은 아래와 같습니다.
+```
+def vector_add_python(a, b, c, n):
+    for i in range(n):
+        c[i] = a[i] + b[i]
+    return c
+
+def vector_add_numpy(a, b, c, n):
+    c = a + b
+    return c
+```
+
+CUDA 구현을 확인해보겠습니다.
 ```
 #include <cuda_runtime.h>
 #include <stddef.h>
 
 __global__ void vector_add_kernel(float* a, float* b, float* result, int n) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < n) {
+    int thread = blockIdx.x * blockDim.x + threadIdx.x;
+    int stride = blockDim.x * gridDim.x;
+    for (int idx = thread ; idx < n ; idx += stride) {
         result[idx] = a[idx] + b[idx];
     }
 }
@@ -27,9 +42,8 @@ extern "C" void vector_add(float* a, float* b, float* result, int n) {
 
     // Launch kernel with enough blocks and threads
     int blockSize = 256;
-    int numBlocks = (n + blockSize - 1) / blockSize;
+    int numBlocks = 4;
     vector_add_kernel<<<numBlocks, blockSize>>>(d_a, d_b, d_result, n);
-    cudaDeviceSynchronize();
 
     // Copy result back to host
     cudaMemcpy(result, d_result, size, cudaMemcpyDeviceToHost);
@@ -45,7 +59,7 @@ CMake를 사용하여 빌드한 후 Python에서 사용합니다.
 
 작업 경로로 이동합니다.
 ```
-cd /home/nvidia/workspace/deeplearningwithjetson/Optimization_with_Jetson_Nano/2_CUDA_with_Python
+cd /home/nvidia/workspace/deeplearningwithjetson/Optimization_with_Jetson_Nano/2_CUDA_with_python
 ```
 
 빌드합니다.
@@ -56,30 +70,14 @@ cmake ..
 make
 ```
 
-Python에서 사용합니다.
+Python에서 시간을 확인합니다.
 ```
-import numpy as np
-import ctypes
+python3 /home/nvidia/workspace/deeplearningwithjetson/Optimization_with_Jetson_Nano/2_CUDA_with_python/vector_add.py
+```
 
-# C 라이브러리 로드
-# 먼저 C 코드를 컴파일하여 shared library (.so 파일)로 만들어야 합니다.
-c_lib = ctypes.CDLL('./build/vector_add.so')
-
-# 벡터 합 연산을 수행하는 C 함수 정의
-# void vector_add(double* a, double* b, double* result, int n)
-c_lib.vector_add.argtypes = [ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float), ctypes.c_int]
-
-n = 1024
-a = np.random.randn(n).astype(np.float32)
-b = np.random.randn(n).astype(np.float32)
-c = np.zeros_like(a)
-
-# C 함수 호출
-c_lib.vector_add(a.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
-                 b.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
-                 c.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
-                 len(a))
-
-# 결과 출력
-print(np.max(c -(a+b)))
+아래와 유사한 시간을 확인할 수 있습니다.
+```
+vector_add_python 2회 반복 평균: 19475.573603ms
+vector_add_numpy 10회 반복 평균: 109.621709ms
+vector_add 10회 반복 평균: 241.101823ms
 ```

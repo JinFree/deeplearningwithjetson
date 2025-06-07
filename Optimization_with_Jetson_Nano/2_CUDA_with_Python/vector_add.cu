@@ -1,6 +1,5 @@
 #include <cuda_runtime.h>
 #include <stddef.h>
-#include <cstring>
 
 __global__ void vector_add_kernel(float* a, float* b, float* result, int n) {
     int thread = blockIdx.x * blockDim.x + threadIdx.x;
