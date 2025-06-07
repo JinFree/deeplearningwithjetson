@@ -8,11 +8,11 @@ def vector_add(a, b, c, n):
     return c
 
 
-n = 4096
+n = 4096 * 1024
 a = np.random.randn(n).astype(np.float32)
 b = np.random.randn(n).astype(np.float32)
 c = np.zeros_like(a)    
     
 timer = timeit.Timer(vector_add(a, b, c, n).copy)
-duration = timer.timeit(number=100)
-print(f"100회 반복 평균: {duration/100:.6f}초")
+duration = timer.timeit(number=10)
+print(f"10회 반복 평균: {duration/10*1000:.6f}ms")

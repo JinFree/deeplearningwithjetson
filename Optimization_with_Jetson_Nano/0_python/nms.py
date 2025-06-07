@@ -85,5 +85,5 @@ timer = timeit.Timer(nms_boxes(
     eta=1.0,
     top_k=0
 ).copy)
-duration = timer.timeit(number=100)
-print(f"100회 반복 평균: {duration/100:.6f}초")
+duration = timer.timeit(number=10)
+print(f"10회 반복 평균: {duration/10*1000:.6f}ms")
