@@ -47,6 +47,8 @@ https://github.com/JinFree/deeplearningwithjetson/tree/main/Large_Language_Model
 
 ## Object Detection with Jetson Nano
 
+https://github.com/JinFree/deeplearningwithjetson/tree/main/Object_Detection_with_Jetson_Nano
+
 ## Fundamentals of Deep Learning 
 
 - Nvidia DLI
