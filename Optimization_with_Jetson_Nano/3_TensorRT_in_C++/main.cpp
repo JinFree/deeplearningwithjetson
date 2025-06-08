@@ -114,8 +114,6 @@ public:
 
     int getInputH() const { return inputH; }
     int getInputW() const { return inputW; }
-    const std::vector<int>& getOutputIndices() const { return outputIndices; }
-    nvinfer1::ICudaEngine* getEngine() const { return engine; }
 
 private:
     nvinfer1::ICudaEngine* engine{};
@@ -253,8 +251,6 @@ int main(int argc, char** argv) {
     yolo.infer(resizedRGB, outputData);
 
     // outputData → boxes, classIds, scores 파싱
-    nvinfer1::ICudaEngine* engine = yolo.getEngine();
-    int outIdx = yolo.getOutputIndices()[0];
     const int numClasses = static_cast<int>(CLASS_NAMES.size()); // 80
     const int C = 4 + numClasses;                               // 84
     // outputData 전체 요소 개수에서 C로 나누어 N을 구함
