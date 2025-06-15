@@ -1,6 +1,6 @@
-# Deep Learning with Jetson
+# Deep Learning with Jetson & Google Colab.
 
-2025 ICT 이노베이션스퀘어 강의자료
+### 2025 ICT 이노베이션스퀘어 강의자료
 
 ## OpenCV with Python
 
@@ -20,6 +20,8 @@ https://github.com/JinFree/deeplearningwithjetson/tree/main/PyTorch_Native_CNN
 
 ## Generative AI
 
+https://github.com/JinFree/deeplearningwithjetson/tree/main/PyTorch_Generative_Model
+
 ## PyTorch Object Detections
 
 https://github.com/JinFree/deeplearningwithjetson/tree/main/PyTorch_Object_Detection
@@ -30,7 +32,7 @@ https://github.com/JinFree/deeplearningwithjetson/tree/main/Large_Language_Model
 
 ## CUDA C/C++
 
-- Nvidia DLI
+- NVIDIA DLI
 
 - [NVIDIA Developer Program ](https://developer.nvidia.com/)계정(◀클릭)이 없는 경우 교육 시작 전 미리 가입해 주시기 바랍니다. (필수)
   - 교육 후에 제공되는 모든 DLI 교육 자료는 본 계정을 통해 접속하실 수 있습니다.
@@ -43,7 +45,8 @@ https://github.com/JinFree/deeplearningwithjetson/tree/main/Large_Language_Model
 
 ## CUDA Python
 
-- Nvidia DLI
+- NVIDIA DLI
+  - https://learn.nvidia.com/courses/course-detail?course_id=course-v1:DLI+C-AC-02+V1
 
 ## Object Detection with Jetson Nano
 
@@ -51,7 +54,8 @@ https://github.com/JinFree/deeplearningwithjetson/tree/main/Object_Detection_wit
 
 ## Fundamentals of Deep Learning 
 
-- Nvidia DLI
+- NVIDIA DLI
+  - https://learn.nvidia.com/courses/course-detail?course_id=course-v1:DLI+C-FX-01+V3
 
 ## Optimization with Jetson
 
