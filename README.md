@@ -2,35 +2,35 @@
 
 ### 2025 ICT 이노베이션스퀘어 강의자료
 
-## OpenCV with Python
+## OpenCV with Python (왕진영 / 고재균)
 
 https://github.com/JinFree/deeplearningwithjetson/tree/main/OpenCV_Python
 
-## ML basic with Python
+## ML basic with Python (고재균)
 
 https://github.com/JinFree/deeplearningwithjetson/tree/main/ML_Basic_Python
 
-## DL basic with Python
+## DL basic with Python (고재균)
 
 https://github.com/JinFree/deeplearningwithjetson/tree/main/DL_Basic_Python
 
-## PyTorch Native CNN
+## PyTorch Native CNN (왕진영)
 
 https://github.com/JinFree/deeplearningwithjetson/tree/main/PyTorch_Native_CNN
 
-## PyTorch Generative Model
+## PyTorch Generative Model (고재균)
 
 https://github.com/JinFree/deeplearningwithjetson/tree/main/PyTorch_Generative_Model
 
-## PyTorch Object Detections
+## PyTorch Object Detections (왕진영)
 
 https://github.com/JinFree/deeplearningwithjetson/tree/main/PyTorch_Object_Detection
 
-## Large Language Model
+## Large Language Model (왕진영)
 
 https://github.com/JinFree/deeplearningwithjetson/tree/main/Large_Language_Model
 
-## CUDA C/C++
+## CUDA C/C++ (왕진영)
 
 - NVIDIA DLI
 
@@ -43,22 +43,22 @@ https://github.com/JinFree/deeplearningwithjetson/tree/main/Large_Language_Model
 시스템에서 교육 내용을 액세스하고 전달하는 기능을 테스트하는 페이지입니다.
 문제가 발생하면 브라우저를 업데이트 해보세요. (※ 참고: 크롬과 파이어폭스 브라우저만 지원됩니다)
 
-## CUDA Python
+## CUDA Python (왕진영)
 
 - NVIDIA DLI
   - https://learn.nvidia.com/courses/course-detail?course_id=course-v1:DLI+C-AC-02+V1
 
-## Object Detection with Jetson Nano
+## Object Detection with Jetson Nano (왕진영)
 
 https://github.com/JinFree/deeplearningwithjetson/tree/main/Object_Detection_with_Jetson_Nano
 
-## Fundamentals of Deep Learning 
+## Fundamentals of Deep Learning (고재균)
 
 - NVIDIA DLI
   - https://learn.nvidia.com/courses/course-detail?course_id=course-v1:DLI+C-FX-01+V3
 
-## Optimization with Jetson
+## Optimization with Jetson (왕진영)
 
-## PyTorch Multimodal
+## PyTorch Multimodal (고재균)
 
 https://github.com/JinFree/deeplearningwithjetson/tree/main/PyTorch_Multimodal
