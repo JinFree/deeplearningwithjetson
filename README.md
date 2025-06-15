@@ -18,7 +18,7 @@ https://github.com/JinFree/deeplearningwithjetson/tree/main/DL_Basic_Python
 
 https://github.com/JinFree/deeplearningwithjetson/tree/main/PyTorch_Native_CNN
 
-## Generative AI
+## PyTorch Generative Model
 
 https://github.com/JinFree/deeplearningwithjetson/tree/main/PyTorch_Generative_Model
 
@@ -59,6 +59,6 @@ https://github.com/JinFree/deeplearningwithjetson/tree/main/Object_Detection_wit
 
 ## Optimization with Jetson
 
-## Multimodal
+## PyTorch Multimodal
 
 https://github.com/JinFree/deeplearningwithjetson/tree/main/PyTorch_Multimodal
