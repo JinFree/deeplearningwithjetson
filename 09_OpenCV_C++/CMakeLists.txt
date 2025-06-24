@@ -19,13 +19,24 @@ include_directories(${PROJECT_INCLUDE_DIR}
                     ${OpenCV_INCLUDE_DIRS})
 
 # —————————————————————————————
+# 4) opencv_functions 라이브러리 
+add_library(opencv_functions STATIC
+    src/opencv_functions.cpp
+)
+target_link_libraries(opencv_functions
+    PUBLIC ${OpenCV_LIBS} 
+)
+target_include_directories(opencv_functions
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+# —————————————————————————————
 # 4) utils 라이브러리 
 add_library(utils STATIC
     src/utils.cpp
 )
 target_link_libraries(utils
-    PUBLIC ${OpenCV_LIBS} 
-    PUBLIC stdc++fs
+    PRIVATE opencv_functions
 )
 target_include_directories(utils
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -39,7 +50,7 @@ add_executable(main
 # utils → OpenCV 순으로 링크
 target_link_libraries(main
     PRIVATE utils
-    PRIVATE stdc++fs
+    PUBLIC stdc++fs
 )
 target_include_directories(main
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include

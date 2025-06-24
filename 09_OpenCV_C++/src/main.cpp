@@ -1,19 +1,28 @@
-#include <utils.hpp>
+#include <main.hpp>
 
-using namespace std;
-
-void process(cv::Mat& dst_image, const cv::Mat& src_image)
+int main(int argc, char** argv)
 {
-    // copy src to dst
-    dst_image = src_image.clone();
-    // Draw Bbox
-    // Write text
-    // Detect edges
-    // Lane Detection
-    // Traffic Light Recognition
+    if (argc < 2) {
+        cout << "Usage: " << argv[0] << " <image_path or video_path> <save_path>" << endl;
+        return -1;
+    }
+    string input_path = argv[1];
+    string save_path = (argc > 2) ? argv[2] : "";
+    cout << "Input Path: " << input_path << endl;
+    cout << "Save Path: " << save_path << endl;
+    if (is_image(input_path)) {
+        cout << "Processing image: " << input_path << endl;
+        process_image(save_path, input_path);
+    } 
+    else if (is_video(input_path)) {
+        cout << "Processing Video: " << input_path << endl;
+        process_video(save_path, input_path);
+    } 
+    else {
+        cout << "Error: Unsupported file type!" << endl;
+    }
+    return 0;
 }
-
-
 
 void process_image(const std::string& save_path, const std::string& input_path)
 {
@@ -48,8 +57,8 @@ void process_video(const std::string& save_path, const std::string& input_path)
 
     cv::VideoWriter writer;
     if (!save_path.empty()) {
-        writer.open(save_path, cap.get(CAP_PROP_FOURCC), cap.get(CAP_PROP_FPS), 
-                    Size((int)cap.get(CAP_PROP_FRAME_WIDTH), (int)cap.get(CAP_PROP_FRAME_HEIGHT)));
+        writer.open(save_path, cap.get(cv::CAP_PROP_FOURCC), cap.get(cv::CAP_PROP_FPS), 
+                    cv::Size((int)cap.get(cv::CAP_PROP_FRAME_WIDTH), (int)cap.get(cv::CAP_PROP_FRAME_HEIGHT)));
         if (!writer.isOpened()) {
             cerr << "Error: Could not open the video writer!" << endl;
             return;
